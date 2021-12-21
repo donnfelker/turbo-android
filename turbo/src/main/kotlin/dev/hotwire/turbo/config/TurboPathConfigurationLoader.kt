@@ -1,8 +1,10 @@
 package dev.hotwire.turbo.config
 
 import android.content.Context
+import com.google.gson.JsonParseException
 import dev.hotwire.turbo.util.toObject
 import com.google.gson.reflect.TypeToken
+import dev.hotwire.turbo.util.TurboLog
 import dev.hotwire.turbo.util.dispatcherProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -31,8 +33,12 @@ internal class TurboPathConfigurationLoader(val context: Context) : CoroutineSco
 
         launch {
             repository.getRemoteConfiguration(url)?.let {
-                onCompletion(load(it))
-                cacheConfigurationForUrl(url, load(it))
+                try {
+                    onCompletion(load(it))
+                    cacheConfigurationForUrl(url, load(it))
+                } catch (e: JsonParseException) {
+                    TurboLog.e("Remote Configuration Error: ${e.message}")
+                }
             }
         }
     }
